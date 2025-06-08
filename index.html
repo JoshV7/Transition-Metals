@@ -118,6 +118,7 @@
       align-self: center;
       text-align: center;
       min-width: 200px;
+      transition: box-shadow 0.2s ease;
     }
 
     #ion.dragging {
@@ -125,9 +126,10 @@
       cursor: grabbing;
     }
 
+    /* Changed selected effect: subtle glowing border, no green background */
     #ion.selected {
       box-shadow: 0 0 15px 3px #4caf50;
-      background-color: #2e7d32;
+      background-color: #1976d2; /* keep original blue */
       cursor: pointer;
     }
 
@@ -270,243 +272,246 @@
       "Pale brown precipitate": "#bdb76b"
     };
 
-  const ionEl = document.getElementById('ion');
-  const dropzonesEl = document.getElementById('dropzones');
-  const feedbackEl = document.getElementById('feedback');
-  const scoreTimeEl = document.getElementById('score-time');
-  const showAnswerBtn = document.getElementById('show-answer');
-  const nextBtn = document.getElementById('next');
-  const tryAgainBtn = document.getElementById('try-again');
+    const ionEl = document.getElementById('ion');
+    const dropzonesEl = document.getElementById('dropzones');
+    const feedbackEl = document.getElementById('feedback');
+    const scoreTimeEl = document.getElementById('score-time');
+    const showAnswerBtn = document.getElementById('show-answer');
+    const nextBtn = document.getElementById('next');
+    const tryAgainBtn = document.getElementById('try-again');
 
-  let species = Object.keys(species_colours);
-  let currentIndex = 0;
-  let score = 0;
-  let questionsAnswered = 0;
-  let gameOver = false;
-  let answered = false; // To lock dragging after answer
-  let startTime;
-  let totalStartTime;
-  let totalElapsedInterval;
-  let ionSelectedForSnap = false;
+    let species = Object.keys(species_colours);
+    let currentIndex = 0;
+    let score = 0;
+    let questionsAnswered = 0;
+    let gameOver = false;
+    let answered = false; // To lock dragging after answer
+    let startTime;
+    let totalStartTime;
+    let totalElapsedInterval;
+    let ionSelectedForSnap = false;
 
-  // Shuffle helper
-  function shuffle(array) {
-    for(let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
+    // Shuffle helper
+    function shuffle(array) {
+      for(let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
     }
-  }
 
-  // Setup dropzones with unique colours
-  function setupDropzones() {
-    dropzonesEl.innerHTML = '';
-    let uniqueColours = [...new Set(Object.values(species_colours))];
-    shuffle(uniqueColours);
-    uniqueColours.forEach(colour => {
-      const box = document.createElement('div');
-      box.className = 'dropzone';
-      box.textContent = colour;
-      box.style.backgroundColor = colour_visuals[colour] || '#555';
-      box.setAttribute('data-colour', colour);
-      box.setAttribute('tabindex', '0');
+    // Setup dropzones with unique colours
+    function setupDropzones() {
+      dropzonesEl.innerHTML = '';
+      let uniqueColours = [...new Set(Object.values(species_colours))];
+      shuffle(uniqueColours);
+      uniqueColours.forEach(colour => {
+        const box = document.createElement('div');
+        box.className = 'dropzone';
+        box.textContent = colour;
+        box.style.backgroundColor = colour_visuals[colour] || '#555';
+        box.setAttribute('data-colour', colour);
+        box.setAttribute('tabindex', '0');
 
-      box.addEventListener('dragover', e => {
-        e.preventDefault();
-        box.classList.add('drag-over');
-      });
-      box.addEventListener('dragleave', e => {
-        box.classList.remove('drag-over');
-      });
-      box.addEventListener('drop', e => {
-        e.preventDefault();
-        box.classList.remove('drag-over');
-        if(gameOver || answered) return;  // lock after answer
-        checkAnswer(box.getAttribute('data-colour'));
-      });
+        box.addEventListener('dragover', e => {
+          e.preventDefault();
+          box.classList.add('drag-over');
+        });
+        box.addEventListener('dragleave', e => {
+          box.classList.remove('drag-over');
+        });
+        box.addEventListener('drop', e => {
+          e.preventDefault();
+          box.classList.remove('drag-over');
+          if(gameOver || answered) return;  // lock after answer
+          if (!ionSelectedForSnap) return; // prevent drop if no ion selected
+          checkAnswer(box.getAttribute('data-colour'));
+        });
 
-      box.addEventListener('click', e => {
-        if(gameOver || answered) return;
+        box.addEventListener('click', e => {
+          if(gameOver || answered) return;
 
-        if (ionSelectedForSnap) {
+          if (!ionSelectedForSnap) {
+            // User hasn't selected the species ion first, ignore colour click
+            feedbackEl.textContent = '⚠️ Please select the species first!';
+            feedbackEl.style.color = 'orange';
+            return;
+          }
+
           // Ion is selected, treat this click as answer attempt
           checkAnswer(box.getAttribute('data-colour'));
           ionSelectedForSnap = false;
           ionEl.classList.remove('selected');
           dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
-        } else {
-          // Toggle active glow on dropzone
-          if (box.classList.contains('active')) {
-            box.classList.remove('active');
-          } else {
-            dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
-            box.classList.add('active');
-          }
-        }
+        });
+
+        dropzonesEl.appendChild(box);
       });
+    }
 
-      dropzonesEl.appendChild(box);
+    // Set current ion text and reset styles
+    function setCurrentIon() {
+      ionEl.textContent = species[currentIndex];
+      ionEl.setAttribute('aria-grabbed', 'false');
+      ionEl.classList.remove('dragging');
+      ionEl.classList.remove('selected');
+      ionEl.setAttribute('draggable', 'true'); // enable dragging again
+      feedbackEl.textContent = '';
+      feedbackEl.style.color = 'lightgreen';
+      showAnswerBtn.disabled = false;
+      nextBtn.disabled = true;
+      answered = false;  // unlock dragging
+      ionSelectedForSnap = false;
+      startTime = Date.now(); // start timer for this question
+      if(!totalStartTime) {
+        totalStartTime = Date.now();
+        startTotalElapsedTimer();
+      }
+      updateScoreTime();
+      ionEl.style.display = 'inline-block'; // ensure visible
+    }
+
+    // Drag event handlers
+    ionEl.addEventListener('dragstart', (e) => {
+      if(answered) {
+        e.preventDefault();  // block dragging if already answered
+        return;
+      }
+      ionEl.classList.add('dragging');
+      ionEl.setAttribute('aria-grabbed', 'true');
+      ionSelectedForSnap = true;  // selecting ion by dragging also
+      ionEl.classList.add('selected');
+      dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
     });
-  }
 
-  // Set current ion text and reset styles
-  function setCurrentIon() {
-    ionEl.textContent = species[currentIndex];
-    ionEl.setAttribute('aria-grabbed', 'false');
-    ionEl.classList.remove('dragging');
-    ionEl.classList.remove('selected');
-    ionEl.setAttribute('draggable', 'true'); // enable dragging again
-    feedbackEl.textContent = '';
-    feedbackEl.style.color = 'lightgreen';
-    showAnswerBtn.disabled = false;
-    nextBtn.disabled = true;
-    answered = false;  // unlock dragging
-    ionSelectedForSnap = false;
-    startTime = Date.now(); // start timer for this question
-    if(!totalStartTime) {
-      totalStartTime = Date.now();
-      startTotalElapsedTimer();
-    }
-    updateScoreTime();
-    ionEl.style.display = 'inline-block'; // ensure visible
-  }
+    ionEl.addEventListener('dragend', (e) => {
+      ionEl.classList.remove('dragging');
+      ionEl.setAttribute('aria-grabbed', 'false');
+    });
 
-  // Drag event handlers
-  ionEl.addEventListener('dragstart', (e) => {
-    if(answered) {
-      e.preventDefault();  // block dragging if already answered
-      return;
-    }
-    ionEl.classList.add('dragging');
-    ionEl.setAttribute('aria-grabbed', 'true');
-  });
+    // Click on ion selects it for snap mode on mobile
+    ionEl.addEventListener('click', e => {
+      if(gameOver || answered) return;
+      if(ionSelectedForSnap) {
+        // Deselect if already selected
+        ionSelectedForSnap = false;
+        ionEl.classList.remove('selected');
+        dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
+      } else {
+        ionSelectedForSnap = true;
+        ionEl.classList.add('selected');
+        feedbackEl.textContent = ''; // clear any warning
+        dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
+      }
+    });
 
-  ionEl.addEventListener('dragend', (e) => {
-    ionEl.classList.remove('dragging');
-    ionEl.setAttribute('aria-grabbed', 'false');
-  });
-
-  // Click on ion selects it for snap mode on mobile
-  ionEl.addEventListener('click', e => {
-    if(gameOver || answered) return;
-    if(ionSelectedForSnap) {
-      // Deselect if already selected
+    // Check answer correctness
+    function checkAnswer(selectedColour) {
+      if(gameOver || answered) return;
+      const endTime = Date.now();
+      const timeTaken = Math.round((endTime - startTime) / 1000);
+      const correctColour = species_colours[species[currentIndex]];
+      questionsAnswered++;
+      showAnswerBtn.disabled = true;
+      ionEl.setAttribute('draggable', 'false');  // disable dragging after answer
+      answered = true;
       ionSelectedForSnap = false;
       ionEl.classList.remove('selected');
       dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
-    } else {
-      ionSelectedForSnap = true;
-      ionEl.classList.add('selected');
-    }
-  });
 
-  // Check answer correctness
-  function checkAnswer(selectedColour) {
-    if(gameOver || answered) return;
-    const endTime = Date.now();
-    const timeTaken = Math.round((endTime - startTime) / 1000);
-    const correctColour = species_colours[species[currentIndex]];
-    questionsAnswered++;
-    showAnswerBtn.disabled = true;
-    ionEl.setAttribute('draggable', 'false');  // disable dragging after answer
-    answered = true;
-    ionSelectedForSnap = false;
-    ionEl.classList.remove('selected');
-    dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
-
-    if(selectedColour === correctColour) {
-      feedbackEl.textContent = `✅ Correct! ${species[currentIndex]} is a ${selectedColour}`;
-      feedbackEl.style.color = 'lightgreen';
-      score++;
-    } else {
-      feedbackEl.textContent = `❌ Wrong! ${species[currentIndex]} is a ${correctColour}, not a ${selectedColour}`;
-      feedbackEl.style.color = 'red';
-    }
-    updateScoreTime();
-    nextBtn.disabled = false;
-  }
-
-  // Show the correct answer without guessing
-  showAnswerBtn.addEventListener('click', () => {
-    if(gameOver || answered) return;
-    const correctColour = species_colours[species[currentIndex]];
-    feedbackEl.textContent = `The correct answer was: ${correctColour}`;
-    feedbackEl.style.color = 'orange';
-    showAnswerBtn.disabled = true;
-    nextBtn.disabled = false;
-    questionsAnswered++;
-    ionEl.setAttribute('draggable', 'false');  // disable dragging after show answer
-    answered = true;
-    ionSelectedForSnap = false;
-    ionEl.classList.remove('selected');
-    dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
-    updateScoreTime();
-  });
-
-  // Move to the next ion or finish game
-  nextBtn.addEventListener('click', () => {
-    currentIndex++;
-    if(currentIndex >= species.length) {
-      gameOver = true;
-      feedbackEl.innerHTML = `🎉 You've matched all the species! Total time: ${getTotalElapsedTime()} seconds.`;
-      ionEl.textContent = '';
-      ionEl.style.display = 'none';
-      showAnswerBtn.style.display = 'none';
-      nextBtn.style.display = 'none';
-      tryAgainBtn.style.display = 'inline-block';
-      stopTotalElapsedTimer();
+      if(selectedColour === correctColour) {
+        feedbackEl.textContent = `✅ Correct! ${species[currentIndex]} is a ${selectedColour}`;
+        feedbackEl.style.color = 'lightgreen';
+        score++;
+      } else {
+        feedbackEl.textContent = `❌ Wrong! ${species[currentIndex]} is a ${correctColour}, not a ${selectedColour}`;
+        feedbackEl.style.color = 'red';
+      }
       updateScoreTime();
-    } else {
-      setCurrentIon();
+      nextBtn.disabled = false;
     }
-  });
 
-  // Reset game state
-  tryAgainBtn.addEventListener('click', () => {
-    species = Object.keys(species_colours);
+    // Show the correct answer without guessing
+    showAnswerBtn.addEventListener('click', () => {
+      if(gameOver || answered) return;
+      const correctColour = species_colours[species[currentIndex]];
+      feedbackEl.textContent = `The correct answer was: ${correctColour}`;
+      feedbackEl.style.color = 'orange';
+      showAnswerBtn.disabled = true;
+      nextBtn.disabled = false;
+      questionsAnswered++;
+      ionEl.setAttribute('draggable', 'false');  // disable dragging after show answer
+      answered = true;
+      ionSelectedForSnap = false;
+      ionEl.classList.remove('selected');
+      dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
+      updateScoreTime();
+    });
+
+    // Move to the next ion or finish game
+    nextBtn.addEventListener('click', () => {
+      currentIndex++;
+      if(currentIndex >= species.length) {
+        gameOver = true;
+        feedbackEl.innerHTML = `🎉 You've matched all the species! Total time: ${getTotalElapsedTime()} seconds.`;
+        ionEl.textContent = '';
+        ionEl.style.display = 'none';
+        showAnswerBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        tryAgainBtn.style.display = 'inline-block';
+        stopTotalElapsedTimer();
+        updateScoreTime();
+      } else {
+        setCurrentIon();
+      }
+    });
+
+    // Reset game state
+    tryAgainBtn.addEventListener('click', () => {
+      species = Object.keys(species_colours);
+      shuffle(species);
+      currentIndex = 0;
+      score = 0;
+      questionsAnswered = 0;
+      gameOver = false;
+      tryAgainBtn.style.display = 'none';
+      showAnswerBtn.style.display = 'inline-block';
+      nextBtn.style.display = 'inline-block';
+      totalStartTime = null;
+      ionSelectedForSnap = false;
+      setCurrentIon();
+      updateScoreTime();
+      feedbackEl.textContent = '';
+    });
+
+    // Update score and time text (time is total elapsed)
+    function updateScoreTime() {
+      scoreTimeEl.textContent = `Score: ${score} / ${questionsAnswered} | Time: ${getTotalElapsedTime()}s`;
+    }
+
+    // Total elapsed time functions
+    function getTotalElapsedTime() {
+      if(!totalStartTime) return 0;
+      return Math.floor((Date.now() - totalStartTime) / 1000);
+    }
+    function startTotalElapsedTimer() {
+      if(totalElapsedInterval) clearInterval(totalElapsedInterval);
+      totalElapsedInterval = setInterval(() => {
+        updateScoreTime();
+      }, 1000);
+    }
+    function stopTotalElapsedTimer() {
+      if(totalElapsedInterval) {
+        clearInterval(totalElapsedInterval);
+        totalElapsedInterval = null;
+      }
+    }
+
+    // Initialize
     shuffle(species);
-    currentIndex = 0;
-    score = 0;
-    questionsAnswered = 0;
-    gameOver = false;
-    tryAgainBtn.style.display = 'none';
-    showAnswerBtn.style.display = 'inline-block';
-    nextBtn.style.display = 'inline-block';
-    totalStartTime = null;
-    ionSelectedForSnap = false;
+    setupDropzones();
     setCurrentIon();
     updateScoreTime();
-    feedbackEl.textContent = '';
-  });
-
-  // Update score and time text (time is total elapsed)
-  function updateScoreTime() {
-    scoreTimeEl.textContent = `Score: ${score} / ${questionsAnswered} | Time: ${getTotalElapsedTime()}s`;
-  }
-
-  // Total elapsed time functions
-  function getTotalElapsedTime() {
-    if(!totalStartTime) return 0;
-    return Math.floor((Date.now() - totalStartTime) / 1000);
-  }
-  function startTotalElapsedTimer() {
-    if(totalElapsedInterval) clearInterval(totalElapsedInterval);
-    totalElapsedInterval = setInterval(() => {
-      updateScoreTime();
-    }, 1000);
-  }
-  function stopTotalElapsedTimer() {
-    if(totalElapsedInterval) {
-      clearInterval(totalElapsedInterval);
-      totalElapsedInterval = null;
-    }
-  }
-
-  // Initialize
-  shuffle(species);
-  setupDropzones();
-  setCurrentIon();
-  updateScoreTime();
-</script>
+  </script>
 
 </body>
 </html>
