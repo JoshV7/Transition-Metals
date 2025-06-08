@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Transition Metal Colour Match</title>
+<style>
+  /* Dark theme base */
+  body {
+    margin: 0;
+    background-color: #121212;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 1rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.8rem;
+    border-bottom: 1px solid #333;
+  }
+
+  main {
+    flex: 1;
+    padding: 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #ion {
+    margin: 2rem 0 1rem;
+    font-weight: 700;
+    font-size: 1.5rem;
+    background-color: #1976d2;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: grab;
+    user-select: none;
+    width: fit-content;
+  }
+
+  #ion.dragging {
+    opacity: 0.6;
+    cursor: grabbing;
+  }
+
+  #dropzones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
+    gap: 1rem;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .dropzone {
+    border-radius: 8px;
+    padding: 2rem 1rem;
+    text-align: center;
+    font-weight: 600;
+    color: black;
+    border: 2px solid #666;
+    user-select: none;
+    transition: transform 0.2s ease;
+  }
+  .dropzone.drag-over {
+    transform: scale(1.1);
+    border-color: #fff;
+    box-shadow: 0 0 8px 2px #fff;
+  }
+
+  #feedback {
+    margin: 1.5rem 0;
+    min-height: 50px;
+    font-size: 1.25rem;
+    text-align: center;
+  }
+
+  #score {
+    margin-top: 0.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  button {
+    background-color: #388e3c;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 700;
+    padding: 0.6rem 1.4rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  button:hover:not(:disabled) {
+    background-color: #2e7d32;
+  }
+
+  button:disabled {
+    background-color: #444;
+    color: #aaa;
+    cursor: default;
+  }
+
+  button#show-answer {
+    background-color: #d32f2f;
+  }
+  button#show-answer:hover:not(:disabled) {
+    background-color: #b71c1c;
+  }
+
+  button#try-again {
+    background-color: #00cc66;
+  }
+  button#try-again:hover {
+    background-color: #00994d;
+  }
+
+  footer {
+    text-align: right;
+    padding: 0.5rem 1rem 1rem;
+    color: #888;
+    font-weight: 600;
+  }
+
+  @media (max-width: 400px) {
+    #ion {
+      font-size: 1.2rem;
+      padding: 0.4rem 0.8rem;
+    }
+    .dropzone {
+      padding: 1.5rem 1rem;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>Transition Metal Colour Match</header>
+
+<main>
+  <div id="ion" draggable="true" tabindex="0" aria-grabbed="false"></div>
+
+  <div id="dropzones"></div>
+
+  <div id="feedback" aria-live="polite"></div>
+
+  <div id="score"></div>
+
+  <div class="btn-group">
+    <button id="show-answer">Show Answer</button>
+    <button id="next" disabled>Next</button>
+    <button id="try-again" style="display:none;">Try Again</button>
+  </div>
+</main>
+
+<footer>by Josh</footer>
+
+<script>
+  const species_colours = {
+    "[Cu(H₂O)₆]²⁺": "Pale blue solution",
+    "Cu(OH)₂": "Pale blue precipitate",
+    "[Cu(NH₃)₄(H₂O)₂]²⁺": "Dark blue solution",
+    "CuCl₄²⁻": "Yellow solution",
+    "CuI": "White precipitate",
+    "Cu": "Brown solid",
+    "[Cr(H₂O)₆]³⁺": "Pale purple solution",
+    "Cr(OH)₃": "Dark green precipitate",
+    "[Cr(NH₃)₆]³⁺": "Purple solution",
+    "[Cr(OH)₆]³⁻": "Dark green solution",
+    "Cr₂O₇²⁻": "Orange solution",
+    "CrO₄²⁻": "Yellow solution",
+    "[Fe(H₂O)₆]³⁺": "Yellow solution",
+    "Fe(OH)₃": "Orange-brown precipitate",
+    "[Fe(H₂O)₆]²⁺": "Pale green solution",
+    "Fe(OH)₂": "Dark green precipitate",
+    "CoCl₄²⁻": "Blue solution",
+    "[Mn(H₂O)₆]²⁺": "Pale pink solution",
+    "Mn(OH)₂": "Pale brown precipitate"
+  };
+
+  const colour_visuals = {
+    "Pale blue solution": "#00BFFF",
+    "Pale blue precipitate": "#00BFFF",
+    "Dark blue solution": "#00008b",
+    "Yellow solution": "#ffff00",
+    "White precipitate": "#ffffff",
+    "Brown solid": "#8b4513",
+    "Pale purple solution": "#da70d6",
+    "Dark green precipitate": "#006400",
+    "Purple solution": "#4b0082",
+    "Dark green solution": "#006400",
+    "Orange solution": "#ff8c00",
+    "Orange-brown precipitate": "#b8860b",
+    "Pale green solution": "#98fb98",
+    "Blue solution": "#1e90ff",
+    "Pale pink solution": "#e6e6fa",
+    "Pale brown precipitate": "#bdb76b"
+  };
+
+  const ionEl = document.getElementById('ion');
+  const dropzonesEl = document.getElementById('dropzones');
+  const feedbackEl = document.getElementById('feedback');
+  const scoreEl = document.getElementById('score');
+  const showAnswerBtn = document.getElementById('show-answer');
+  const nextBtn = document.getElementById('next');
+  const tryAgainBtn = document.getElementById('try-again');
+
+  let species = Object.keys(species_colours);
+  let currentIndex = 0;
+  let score = 0;
+  let questionsAnswered = 0;
+  let gameOver = false;
+
+  // Shuffle helper
+  function shuffle(array) {
+    for(let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  // Setup dropzones with unique colours
+  function setupDropzones() {
+    dropzonesEl.innerHTML = '';
+    let uniqueColours = [...new Set(Object.values(species_colours))];
+    shuffle(uniqueColours);
+    uniqueColours.forEach(colour => {
+      const box = document.createElement('div');
+      box.className = 'dropzone';
+      box.textContent = colour;
+      box.style.backgroundColor = colour_visuals[colour] || '#555';
+      box.setAttribute('data-colour', colour);
+      box.setAttribute('tabindex', '0');
+
+      box.addEventListener('dragover', e => {
+        e.preventDefault();
+        box.classList.add('drag-over');
+      });
+      box.addEventListener('dragleave', e => {
+        box.classList.remove('drag-over');
+      });
+      box.addEventListener('drop', e => {
+        e.preventDefault();
+        box.classList.remove('drag-over');
+        if(gameOver) return;
+        checkAnswer(box.getAttribute('data-colour'));
+      });
+      dropzonesEl.appendChild(box);
+    });
+  }
+
+  // Set current ion text and reset styles
+  function setCurrentIon() {
+    ionEl.textContent = species[currentIndex];
+    ionEl.setAttribute('aria-grabbed', 'false');
+    ionEl.classList.remove('dragging');
+    feedbackEl.textContent = '';
+    showAnswerBtn.disabled = false;
+    nextBtn.disabled = true;
+  }
+
+  // Drag event handlers
+  ionEl.addEventListener('dragstart', (e) => {
+    ionEl.classList.add('dragging');
+    ionEl.setAttribute('aria-grabbed', 'true');
+  });
+
+  ionEl.addEventListener('dragend', (e) => {
+    ionEl.classList.remove('dragging');
+    ionEl.setAttribute('aria-grabbed', 'false');
+  });
+
+  // Check answer correctness
+  function checkAnswer(selectedColour) {
+    if(gameOver) return;
+    const correctColour = species_colours[species[currentIndex]];
+    questionsAnswered++;
+    showAnswerBtn.disabled = true;
+    if(selectedColour === correctColour) {
+      feedbackEl.textContent = `✅ Correct! ${species[currentIndex]} is a ${selectedColour}`;
+      feedbackEl.style.color = 'lightgreen';
+      score++;
+    } else {
+      feedbackEl.textContent = `❌ Wrong! ${species[currentIndex]} is a ${correctColour}, not a ${selectedColour}`;
+      feedbackEl.style.color = 'red';
+    }
+    updateScore();
+    nextBtn.disabled = false;
+  }
+
+  // Show the correct answer without guessing
+  showAnswerBtn.addEventListener('click', () => {
+    if(gameOver) return;
+    const correctColour = species_colours[species[currentIndex]];
+    feedbackEl.textContent = `The correct answer was: ${correctColour}`;
+    feedbackEl.style.color = 'orange';
+    showAnswerBtn.disabled = true;
+    nextBtn.disabled = false;
+    questionsAnswered++;
+    updateScore();
+  });
+
+  // Move to the next ion or finish game
+  nextBtn.addEventListener('click', () => {
+    currentIndex++;
+    if(currentIndex >= species.length) {
+      gameOver = true;
+      feedbackEl.innerHTML = `🎉 You've matched all the species!`;
+      ionEl.textContent = '';
+      showAnswerBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+      tryAgainBtn.style.display = 'inline-block';
+    } else {
+      setCurrentIon();
+    }
+  });
+
+  // Reset game state
+  tryAgainBtn.addEventListener('click', () => {
+    species = Object.keys(species_colours);
+    shuffle(species);
+    currentIndex = 0;
+    score = 0;
+    questionsAnswered = 0;
+    gameOver = false;
+    tryAgainBtn.style.display = 'none';
+    showAnswerBtn.style.display = 'inline-block';
+    nextBtn.style.display = 'inline-block';
+    setCurrentIon();
+    updateScore();
+    feedbackEl.textContent = '';
+  });
+
+  // Update score text
+  function updateScore() {
+    scoreEl.textContent = `Score: ${score} / ${questionsAnswered}`;
+  }
+
+  // Initialize
+  shuffle(species);
+  setupDropzones();
+  setCurrentIon();
+  updateScore();
+</script>
+
+</body>
+</html>
