@@ -224,6 +224,7 @@
   let score = 0;
   let questionsAnswered = 0;
   let gameOver = false;
+  let answered = false; // To lock dragging after answer
 
   // Shuffle helper
   function shuffle(array) {
@@ -256,7 +257,7 @@
       box.addEventListener('drop', e => {
         e.preventDefault();
         box.classList.remove('drag-over');
-        if(gameOver) return;
+        if(gameOver || answered) return;  // lock after answer
         checkAnswer(box.getAttribute('data-colour'));
       });
       dropzonesEl.appendChild(box);
@@ -268,13 +269,19 @@
     ionEl.textContent = species[currentIndex];
     ionEl.setAttribute('aria-grabbed', 'false');
     ionEl.classList.remove('dragging');
+    ionEl.setAttribute('draggable', 'true'); // enable dragging again
     feedbackEl.textContent = '';
     showAnswerBtn.disabled = false;
     nextBtn.disabled = true;
+    answered = false;  // unlock dragging
   }
 
   // Drag event handlers
   ionEl.addEventListener('dragstart', (e) => {
+    if(answered) {
+      e.preventDefault();  // block dragging if already answered
+      return;
+    }
     ionEl.classList.add('dragging');
     ionEl.setAttribute('aria-grabbed', 'true');
   });
@@ -286,10 +293,12 @@
 
   // Check answer correctness
   function checkAnswer(selectedColour) {
-    if(gameOver) return;
+    if(gameOver || answered) return;
     const correctColour = species_colours[species[currentIndex]];
     questionsAnswered++;
     showAnswerBtn.disabled = true;
+    ionEl.setAttribute('draggable', 'false');  // disable dragging after answer
+    answered = true;
     if(selectedColour === correctColour) {
       feedbackEl.textContent = `✅ Correct! ${species[currentIndex]} is a ${selectedColour}`;
       feedbackEl.style.color = 'lightgreen';
@@ -304,13 +313,15 @@
 
   // Show the correct answer without guessing
   showAnswerBtn.addEventListener('click', () => {
-    if(gameOver) return;
+    if(gameOver || answered) return;
     const correctColour = species_colours[species[currentIndex]];
     feedbackEl.textContent = `The correct answer was: ${correctColour}`;
     feedbackEl.style.color = 'orange';
     showAnswerBtn.disabled = true;
     nextBtn.disabled = false;
     questionsAnswered++;
+    ionEl.setAttribute('draggable', 'false');  // disable dragging after show answer
+    answered = true;
     updateScore();
   });
 
