@@ -13,7 +13,8 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh; /* full viewport height */
+    overflow: hidden; /* no scrolling */
   }
 
   header {
@@ -24,85 +25,48 @@
     border-bottom: 1px solid #333;
   }
 
-  #status-bar {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    padding: 0.8rem 1rem;
-    font-weight: 700;
-    font-size: 1.2rem;
-    border-bottom: 1px solid #333;
-    color: #bbdefb;
-  }
-
   main {
     flex: 1;
-    padding: 1rem 2rem;
+    padding: 0.5rem 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow: hidden;
   }
 
-  #ion {
-    margin: 2rem 0 1rem;
-    font-weight: 700;
-    font-size: 1.5rem;
-    background-color: #1976d2;
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-    cursor: grab;
-    user-select: none;
-    width: fit-content;
-  }
-
-  #ion.dragging {
-    opacity: 0.6;
-    cursor: grabbing;
-  }
-
-  #dropzones {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(140px,1fr));
-    gap: 1rem;
+  /* New container for top controls: feedback, score, time, buttons */
+  #top-controls {
     width: 100%;
-    max-width: 600px;
-  }
-
-  .dropzone {
-    border-radius: 8px;
-    padding: 1rem 0.5rem;
-    text-align: center;
-    font-weight: 600;
-    color: black;
-    border: 2px solid #666;
-    user-select: none;
-    transition: transform 0.2s ease;
-    width: 140px;
-    height: 100px;
+    max-width: 700px;
     display: flex;
-    justify-content: center;
+    flex-wrap: wrap;
     align-items: center;
-    word-break: break-word;
-  }
-  .dropzone.drag-over {
-    transform: scale(1.1);
-    border-color: #fff;
-    box-shadow: 0 0 8px 2px #fff;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
   }
 
   #feedback {
-    margin: 1.5rem 0;
-    min-height: 50px;
-    font-size: 1.25rem;
-    text-align: center;
+    flex: 1 1 300px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: lightgreen; /* default, updated dynamically */
+    user-select: none;
   }
 
-  /* Removed separate #score from bottom, now at top */
+  #score-time {
+    flex: 0 0 auto;
+    font-weight: 700;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    user-select: none;
+    color: #ccc;
+  }
 
   .btn-group {
+    flex: 0 0 auto;
     display: flex;
-    gap: 1rem;
-    margin: 1rem 0;
+    gap: 0.5rem;
   }
 
   button {
@@ -111,10 +75,11 @@
     border-radius: 8px;
     color: white;
     font-weight: 700;
-    padding: 0.6rem 1.4rem;
+    padding: 0.5rem 1rem;
     font-size: 1rem;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    min-width: 80px;
   }
 
   button:hover:not(:disabled) {
@@ -141,6 +106,65 @@
     background-color: #00994d;
   }
 
+  #ion {
+    margin: 0.5rem 0 1rem;
+    font-weight: 700;
+    font-size: 1.5rem;
+    background-color: #1976d2;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    cursor: grab;
+    user-select: none;
+    width: fit-content;
+    align-self: center;
+    text-align: center;
+    min-width: 200px;
+  }
+
+  #ion.dragging {
+    opacity: 0.6;
+    cursor: grabbing;
+  }
+
+  #ion.selected {
+    box-shadow: 0 0 15px 3px #4caf50;
+    background-color: #2e7d32;
+    cursor: pointer;
+  }
+
+  #dropzones {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 0.8rem;
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .dropzone {
+    aspect-ratio: 1 / 1; /* square boxes */
+    border-radius: 8px;
+    padding: 0.7rem 0.5rem;
+    text-align: center;
+    font-weight: 600;
+    color: black;
+    border: 2px solid #666;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    cursor: pointer;
+    background-color: #888; /* base grey so color text stands out */
+  }
+  .dropzone.drag-over,
+  .dropzone.active {
+    transform: scale(1.1);
+    border-color: #fff;
+    box-shadow: 0 0 8px 2px #fff;
+    z-index: 2;
+  }
+
   footer {
     text-align: right;
     padding: 0.5rem 1rem 1rem;
@@ -148,21 +172,29 @@
     font-weight: 600;
   }
 
-  @media (max-width: 400px) {
+  @media (max-width: 480px) {
     #ion {
       font-size: 1.2rem;
       padding: 0.4rem 0.8rem;
+      min-width: 160px;
+    }
+    #feedback {
+      font-size: 1rem;
+      flex-basis: 100%;
+    }
+    .btn-group {
+      width: 100%;
+      justify-content: center;
+      margin-top: 0.3rem;
+    }
+    #dropzones {
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      max-width: 100%;
+      gap: 0.6rem;
     }
     .dropzone {
-      padding: 1rem 0.5rem;
-      font-size: 0.9rem;
-      width: 120px;
-      height: 80px;
-    }
-    #status-bar {
-      flex-direction: column;
-      gap: 0.5rem;
-      font-size: 1rem;
+      font-size: 0.8rem;
+      padding: 0.5rem 0.3rem;
     }
   }
 </style>
@@ -170,23 +202,21 @@
 <body>
 
 <header>Transition Metal Colour Match</header>
-<div id="status-bar">
-  <div id="score">Score: 0 / 0</div>
-  <div id="time-taken">Time: 00:00</div>
-</div>
 
 <main>
+  <div id="top-controls" aria-live="polite" aria-atomic="true">
+    <div id="feedback" role="alert" aria-live="assertive" aria-atomic="true"></div>
+    <div id="score-time">Score: 0 / 0 | Time: 0s</div>
+    <div class="btn-group">
+      <button id="show-answer">Show Answer</button>
+      <button id="next" disabled>Next</button>
+      <button id="try-again" style="display:none;">Try Again</button>
+    </div>
+  </div>
+
   <div id="ion" draggable="true" tabindex="0" aria-grabbed="false"></div>
 
-  <div id="dropzones"></div>
-
-  <div id="feedback" aria-live="polite"></div>
-
-  <div class="btn-group">
-    <button id="show-answer">Show Answer</button>
-    <button id="next" disabled>Next</button>
-    <button id="try-again" style="display:none;">Try Again</button>
-  </div>
+  <div id="dropzones" role="list"></div>
 </main>
 
 <footer>by Josh</footer>
@@ -236,8 +266,7 @@
   const ionEl = document.getElementById('ion');
   const dropzonesEl = document.getElementById('dropzones');
   const feedbackEl = document.getElementById('feedback');
-  const scoreEl = document.getElementById('score');
-  const timeTakenEl = document.getElementById('time-taken');
+  const scoreTimeEl = document.getElementById('score-time');
   const showAnswerBtn = document.getElementById('show-answer');
   const nextBtn = document.getElementById('next');
   const tryAgainBtn = document.getElementById('try-again');
@@ -248,10 +277,10 @@
   let questionsAnswered = 0;
   let gameOver = false;
   let answered = false; // To lock dragging after answer
-
-  // Timer variables
-  let startTime = null;
-  let timerInterval = null;
+  let startTime;
+  let totalStartTime;
+  let totalElapsedInterval;
+  let ionSelectedForSnap = false;
 
   // Shuffle helper
   function shuffle(array) {
@@ -287,50 +316,51 @@
         if(gameOver || answered) return;  // lock after answer
         checkAnswer(box.getAttribute('data-colour'));
       });
+
+      box.addEventListener('click', e => {
+        if(gameOver || answered) return;
+
+        if (ionSelectedForSnap) {
+          // Ion is selected, treat this click as answer attempt
+          checkAnswer(box.getAttribute('data-colour'));
+          ionSelectedForSnap = false;
+          ionEl.classList.remove('selected');
+          dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
+        } else {
+          // Toggle active glow on dropzone
+          if (box.classList.contains('active')) {
+            box.classList.remove('active');
+          } else {
+            dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
+            box.classList.add('active');
+          }
+        }
+      });
+
       dropzonesEl.appendChild(box);
     });
   }
 
-  // Format time as mm:ss
-  function formatTime(ms) {
-    let totalSeconds = Math.floor(ms / 1000);
-    let minutes = Math.floor(totalSeconds / 60);
-    let seconds = totalSeconds % 60;
-    return `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-  }
-
-  // Start timer
-  function startTimer() {
-    startTime = Date.now();
-    timerInterval = setInterval(() => {
-      let elapsed = Date.now() - startTime;
-      timeTakenEl.textContent = `Time: ${formatTime(elapsed)}`;
-    }, 1000);
-  }
-
-  // Stop timer
-  function stopTimer() {
-    if(timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-  }
-
   // Set current ion text and reset styles
   function setCurrentIon() {
-    // Start timer on first question
-    if(currentIndex === 0 && !startTime) {
-      startTimer();
-    }
-
     ionEl.textContent = species[currentIndex];
     ionEl.setAttribute('aria-grabbed', 'false');
     ionEl.classList.remove('dragging');
+    ionEl.classList.remove('selected');
     ionEl.setAttribute('draggable', 'true'); // enable dragging again
     feedbackEl.textContent = '';
+    feedbackEl.style.color = 'lightgreen';
     showAnswerBtn.disabled = false;
     nextBtn.disabled = true;
     answered = false;  // unlock dragging
+    ionSelectedForSnap = false;
+    startTime = Date.now(); // start timer for this question
+    if(!totalStartTime) {
+      totalStartTime = Date.now();
+      startTotalElapsedTimer();
+    }
+    updateScoreTime();
+    ionEl.style.display = 'inline-block'; // ensure visible
   }
 
   // Drag event handlers
@@ -348,14 +378,34 @@
     ionEl.setAttribute('aria-grabbed', 'false');
   });
 
+  // Click on ion selects it for snap mode on mobile
+  ionEl.addEventListener('click', e => {
+    if(gameOver || answered) return;
+    if(ionSelectedForSnap) {
+      // Deselect if already selected
+      ionSelectedForSnap = false;
+      ionEl.classList.remove('selected');
+      dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
+    } else {
+      ionSelectedForSnap = true;
+      ionEl.classList.add('selected');
+    }
+  });
+
   // Check answer correctness
   function checkAnswer(selectedColour) {
     if(gameOver || answered) return;
+    const endTime = Date.now();
+    const timeTaken = Math.round((endTime - startTime) / 1000);
     const correctColour = species_colours[species[currentIndex]];
     questionsAnswered++;
     showAnswerBtn.disabled = true;
     ionEl.setAttribute('draggable', 'false');  // disable dragging after answer
     answered = true;
+    ionSelectedForSnap = false;
+    ionEl.classList.remove('selected');
+    dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
+
     if(selectedColour === correctColour) {
       feedbackEl.textContent = `✅ Correct! ${species[currentIndex]} is a ${selectedColour}`;
       feedbackEl.style.color = 'lightgreen';
@@ -364,7 +414,7 @@
       feedbackEl.textContent = `❌ Wrong! ${species[currentIndex]} is a ${correctColour}, not a ${selectedColour}`;
       feedbackEl.style.color = 'red';
     }
-    updateScore();
+    updateScoreTime();
     nextBtn.disabled = false;
   }
 
@@ -379,7 +429,10 @@
     questionsAnswered++;
     ionEl.setAttribute('draggable', 'false');  // disable dragging after show answer
     answered = true;
-    updateScore();
+    ionSelectedForSnap = false;
+    ionEl.classList.remove('selected');
+    dropzonesEl.childNodes.forEach(dz => dz.classList.remove('active'));
+    updateScoreTime();
   });
 
   // Move to the next ion or finish game
@@ -387,13 +440,14 @@
     currentIndex++;
     if(currentIndex >= species.length) {
       gameOver = true;
-      stopTimer();
-      const elapsed = Date.now() - startTime;
-      feedbackEl.innerHTML = `🎉 You've matched all the species!<br>Time taken: <strong>${formatTime(elapsed)}</strong>`;
+      feedbackEl.innerHTML = `🎉 You've matched all the species! Total time: ${getTotalElapsedTime()} seconds.`;
       ionEl.textContent = '';
+      ionEl.style.display = 'none';
       showAnswerBtn.style.display = 'none';
       nextBtn.style.display = 'none';
       tryAgainBtn.style.display = 'inline-block';
+      stopTotalElapsedTimer();
+      updateScoreTime();
     } else {
       setCurrentIon();
     }
@@ -410,23 +464,41 @@
     tryAgainBtn.style.display = 'none';
     showAnswerBtn.style.display = 'inline-block';
     nextBtn.style.display = 'inline-block';
+    totalStartTime = null;
+    ionSelectedForSnap = false;
     setCurrentIon();
-    updateScore();
+    updateScoreTime();
     feedbackEl.textContent = '';
-    timeTakenEl.textContent = 'Time: 00:00';
-    startTime = null;
   });
 
-  // Update score text
-  function updateScore() {
-    scoreEl.textContent = `Score: ${score} / ${questionsAnswered}`;
+  // Update score and time text (time is total elapsed)
+  function updateScoreTime() {
+    scoreTimeEl.textContent = `Score: ${score} / ${questionsAnswered} | Time: ${getTotalElapsedTime()}s`;
+  }
+
+  // Total elapsed time functions
+  function getTotalElapsedTime() {
+    if(!totalStartTime) return 0;
+    return Math.floor((Date.now() - totalStartTime) / 1000);
+  }
+  function startTotalElapsedTimer() {
+    if(totalElapsedInterval) clearInterval(totalElapsedInterval);
+    totalElapsedInterval = setInterval(() => {
+      updateScoreTime();
+    }, 1000);
+  }
+  function stopTotalElapsedTimer() {
+    if(totalElapsedInterval) {
+      clearInterval(totalElapsedInterval);
+      totalElapsedInterval = null;
+    }
   }
 
   // Initialize
   shuffle(species);
   setupDropzones();
   setCurrentIon();
-  updateScore();
+  updateScoreTime();
 </script>
 
 </body>
