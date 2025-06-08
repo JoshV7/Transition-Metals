@@ -172,31 +172,36 @@
     font-weight: 600;
   }
 
-  @media (max-width: 480px) {
-    #ion {
-      font-size: 1.2rem;
-      padding: 0.4rem 0.8rem;
-      min-width: 160px;
-    }
-    #feedback {
-      font-size: 1rem;
-      flex-basis: 100%;
-    }
-    .btn-group {
-      width: 100%;
-      justify-content: center;
-      margin-top: 0.3rem;
-    }
-    #dropzones {
-      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-      max-width: 100%;
-      gap: 0.6rem;
-    }
-    .dropzone {
-      font-size: 0.8rem;
-      padding: 0.5rem 0.3rem;
-    }
+@media (max-width: 480px) {
+  #ion {
+    font-size: 1.2rem;
+    padding: 0.4rem 0.8rem;
+    min-width: 160px;
   }
+  #feedback {
+    font-size: 1rem;
+    flex-basis: 100%;
+  }
+  .btn-group {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.3rem;
+  }
+  #dropzones {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    max-width: 100%;
+    gap: 0.6rem;
+  }
+  .dropzone {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.3rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    line-height: 1.1;
+  }
+}
+
 </style>
 </head>
 <body>
