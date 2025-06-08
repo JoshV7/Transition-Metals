@@ -1,284 +1,273 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Transition Metal Colour Match</title>
-<style>
-  /* Dark theme base */
-  body {
-    margin: 0;
-    background-color: #121212;
-    color: white;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    display: flex;
-    flex-direction: column;
-    height: 100vh; /* full viewport height */
-    overflow: hidden; /* no scrolling */
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Transition Metal Colour Match</title>
+  <style>
+    /* Dark theme base */
+    body {
+      margin: 0;
+      background-color: #121212;
+      color: white;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-  header {
-    padding: 1rem;
-    text-align: center;
-    font-weight: 700;
-    font-size: 1.8rem;
-    border-bottom: 1px solid #333;
-  }
+    header {
+      padding: 1rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.8rem;
+      border-bottom: 1px solid #333;
+    }
 
-  main {
-    flex: 1;
-    padding: 0.5rem 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow: hidden;
-  }
+    main {
+      flex: 1;
+      padding: 0.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
 
-  /* New container for top controls: feedback, score, time, buttons */
-  #top-controls {
-    width: 100%;
-    max-width: 700px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
+    #top-controls {
+      width: 100%;
+      max-width: 700px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
 
-  #feedback {
-    flex: 1 1 300px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: lightgreen; /* default, updated dynamically */
-    user-select: none;
-  }
+    #feedback {
+      flex: 1 1 300px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: lightgreen;
+      user-select: none;
+    }
 
-  #score-time {
-    flex: 0 0 auto;
-    font-weight: 700;
-    font-size: 1.1rem;
-    white-space: nowrap;
-    user-select: none;
-    color: #ccc;
-  }
+    #score-time {
+      flex: 0 0 auto;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #ccc;
+      white-space: nowrap;
+      user-select: none;
+    }
 
-  .btn-group {
-    flex: 0 0 auto;
-    display: flex;
-    gap: 0.5rem;
-  }
+    .btn-group {
+      flex: 0 0 auto;
+      display: flex;
+      gap: 0.5rem;
+    }
 
-  button {
-    background-color: #388e3c;
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-weight: 700;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    min-width: 80px;
-  }
+    button {
+      background-color: #388e3c;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 700;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      min-width: 80px;
+    }
 
-  button:hover:not(:disabled) {
-    background-color: #2e7d32;
-  }
+    button:hover:not(:disabled) {
+      background-color: #2e7d32;
+    }
 
-  button:disabled {
-    background-color: #444;
-    color: #aaa;
-    cursor: default;
-  }
+    button:disabled {
+      background-color: #444;
+      color: #aaa;
+      cursor: default;
+    }
 
-  button#show-answer {
-    background-color: #d32f2f;
-  }
-  button#show-answer:hover:not(:disabled) {
-    background-color: #b71c1c;
-  }
+    button#show-answer {
+      background-color: #d32f2f;
+    }
 
-  button#try-again {
-    background-color: #00cc66;
-  }
-  button#try-again:hover {
-    background-color: #00994d;
-  }
+    button#show-answer:hover:not(:disabled) {
+      background-color: #b71c1c;
+    }
 
-  #ion {
-    margin: 0.5rem 0 1rem;
-    font-weight: 700;
-    font-size: 1.5rem;
-    background-color: #1976d2;
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-    cursor: grab;
-    user-select: none;
-    width: fit-content;
-    align-self: center;
-    text-align: center;
-    min-width: 200px;
-  }
+    button#try-again {
+      background-color: #00cc66;
+    }
 
-  #ion.dragging {
-    opacity: 0.6;
-    cursor: grabbing;
-  }
+    button#try-again:hover {
+      background-color: #00994d;
+    }
 
-  #ion.selected {
-    box-shadow: 0 0 15px 3px #4caf50;
-    background-color: #2e7d32;
-    cursor: pointer;
-  }
+    #ion {
+      margin: 0.5rem 0 1rem;
+      font-weight: 700;
+      font-size: 1.5rem;
+      background-color: #1976d2;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: grab;
+      user-select: none;
+      width: fit-content;
+      align-self: center;
+      text-align: center;
+      min-width: 200px;
+    }
 
-  #dropzones {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-    gap: 0.8rem;
-    width: 100%;
-    max-width: 700px;
-  }
+    #ion.dragging {
+      opacity: 0.6;
+      cursor: grabbing;
+    }
 
-  .dropzone {
-    aspect-ratio: 1 / 1; /* square boxes */
-    border-radius: 8px;
-    padding: 0.7rem 0.5rem;
-    text-align: center;
-    font-weight: 600;
-    color: black;
-    border: 2px solid #666;
-    user-select: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    cursor: pointer;
-    background-color: #888; /* base grey so color text stands out */
-  }
-  .dropzone.drag-over,
-  .dropzone.active {
-    transform: scale(1.1);
-    border-color: #fff;
-    box-shadow: 0 0 8px 2px #fff;
-    z-index: 2;
-  }
+    #ion.selected {
+      box-shadow: 0 0 15px 3px #4caf50;
+      background-color: #2e7d32;
+      cursor: pointer;
+    }
 
-  footer {
-    text-align: right;
-    padding: 0.5rem 1rem 1rem;
-    color: #888;
-    font-weight: 600;
-  }
+    #dropzones {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 0.8rem;
+      width: 100%;
+      max-width: 700px;
+    }
 
-@media (max-width: 480px) {
-  #ion {
-    font-size: 1.2rem;
-    padding: 0.4rem 0.8rem;
-    min-width: 160px;
-  }
-  #feedback {
-    font-size: 1rem;
-    flex-basis: 100%;
-  }
-  .btn-group {
-    width: 100%;
-    justify-content: center;
-    margin-top: 0.3rem;
-  }
-  #dropzones {
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-    max-width: 100%;
-    gap: 0.6rem;
-  }
-  .dropzone {
-  border-radius: 8px;
-  padding: 0.7rem 0.5rem;
-  text-align: center;
-  font-weight: 600;
-  color: black;
-  border: 2px solid #666;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  cursor: pointer;
-  background-color: #888;
-  white-space: normal;
-  word-wrap: break-word;
-  min-height: 90px;
-  height: auto;
-}
-}
+    .dropzone {
+      aspect-ratio: 1 / 1;
+      border-radius: 8px;
+      padding: 0.7rem 0.5rem;
+      text-align: center;
+      font-weight: 600;
+      color: black;
+      border: 2px solid #666;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+      background-color: #888;
+    }
 
-</style>
+    .dropzone.drag-over,
+    .dropzone.active {
+      transform: scale(1.1);
+      border-color: #fff;
+      box-shadow: 0 0 8px 2px #fff;
+      z-index: 2;
+    }
+
+    footer {
+      text-align: right;
+      padding: 0.5rem 1rem 1rem;
+      color: #888;
+      font-weight: 600;
+    }
+
+    @media (max-width: 480px) {
+      #ion {
+        font-size: 1.2rem;
+        padding: 0.4rem 0.8rem;
+        min-width: 160px;
+      }
+
+      #feedback {
+        font-size: 1rem;
+        flex-basis: 100%;
+      }
+
+      .btn-group {
+        width: 100%;
+        justify-content: center;
+        margin-top: 0.3rem;
+      }
+
+      #dropzones {
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        max-width: 100%;
+        gap: 0.6rem;
+      }
+
+      .dropzone {
+        white-space: normal;
+        word-wrap: break-word;
+        flex: 1 1 20%;
+        min-width: 140px;
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<header>Transition Metal Colour Match</header>
-
-<main>
-  <div id="top-controls" aria-live="polite" aria-atomic="true">
-    <div id="feedback" role="alert" aria-live="assertive" aria-atomic="true"></div>
-    <div id="score-time">Score: 0 / 0 | Time: 0s</div>
-    <div class="btn-group">
-      <button id="show-answer">Show Answer</button>
-      <button id="next" disabled>Next</button>
-      <button id="try-again" style="display:none;">Try Again</button>
+  <header>Transition Metal Colour Match</header>
+  <main>
+    <div id="top-controls" aria-live="polite" aria-atomic="true">
+      <div id="feedback" role="alert" aria-live="assertive" aria-atomic="true"></div>
+      <div id="score-time">Score: 0 / 0 | Time: 0s</div>
+      <div class="btn-group">
+        <button id="show-answer">Show Answer</button>
+        <button id="next" disabled>Next</button>
+        <button id="try-again" style="display:none;">Try Again</button>
+      </div>
     </div>
-  </div>
 
-  <div id="ion" draggable="true" tabindex="0" aria-grabbed="false"></div>
+    <div id="ion" draggable="true" tabindex="0" aria-grabbed="false"></div>
+    <div id="dropzones" role="list"></div>
+  </main>
+  <footer>by Josh</footer>
 
-  <div id="dropzones" role="list"></div>
-</main>
+  <script>
+    const species_colours = {
+      "[Cu(H₂O)₆]²⁺": "Pale blue solution",
+      "Cu(OH)₂": "Pale blue precipitate",
+      "[Cu(NH₃)₄(H₂O)₂]²⁺": "Dark blue solution",
+      "CuCl₄²⁻": "Yellow solution",
+      "CuI": "White precipitate",
+      "Cu": "Brown solid",
+      "[Cr(H₂O)₆]³⁺": "Pale purple solution",
+      "Cr(OH)₃": "Dark green precipitate",
+      "[Cr(NH₃)₆]³⁺": "Purple solution",
+      "[Cr(OH)₆]³⁻": "Dark green solution",
+      "Cr₂O₇²⁻": "Orange solution",
+      "CrO₄²⁻": "Yellow solution",
+      "[Fe(H₂O)₆]³⁺": "Yellow solution",
+      "Fe(OH)₃": "Orange-brown precipitate",
+      "[Fe(H₂O)₆]²⁺": "Pale green solution",
+      "Fe(OH)₂": "Dark green precipitate",
+      "CoCl₄²⁻": "Blue solution",
+      "[Mn(H₂O)₆]²⁺": "Pale pink solution",
+      "Mn(OH)₂": "Pale brown precipitate"
+    };
 
-<footer>by Josh</footer>
-
-<script>
-  const species_colours = {
-    "[Cu(H₂O)₆]²⁺": "Pale blue solution",
-    "Cu(OH)₂": "Pale blue precipitate",
-    "[Cu(NH₃)₄(H₂O)₂]²⁺": "Dark blue solution",
-    "CuCl₄²⁻": "Yellow solution",
-    "CuI": "White precipitate",
-    "Cu": "Brown solid",
-    "[Cr(H₂O)₆]³⁺": "Pale purple solution",
-    "Cr(OH)₃": "Dark green precipitate",
-    "[Cr(NH₃)₆]³⁺": "Purple solution",
-    "[Cr(OH)₆]³⁻": "Dark green solution",
-    "Cr₂O₇²⁻": "Orange solution",
-    "CrO₄²⁻": "Yellow solution",
-    "[Fe(H₂O)₆]³⁺": "Yellow solution",
-    "Fe(OH)₃": "Orange-brown precipitate",
-    "[Fe(H₂O)₆]²⁺": "Pale green solution",
-    "Fe(OH)₂": "Dark green precipitate",
-    "CoCl₄²⁻": "Blue solution",
-    "[Mn(H₂O)₆]²⁺": "Pale pink solution",
-    "Mn(OH)₂": "Pale brown precipitate"
-  };
-
-  const colour_visuals = {
-    "Pale blue solution": "#00BFFF",
-    "Pale blue precipitate": "#00BFFF",
-    "Dark blue solution": "#00008b",
-    "Yellow solution": "#ffff00",
-    "White precipitate": "#ffffff",
-    "Brown solid": "#8b4513",
-    "Pale purple solution": "#da70d6",
-    "Dark green precipitate": "#006400",
-    "Purple solution": "#4b0082",
-    "Dark green solution": "#006400",
-    "Orange solution": "#ff8c00",
-    "Orange-brown precipitate": "#b8860b",
-    "Pale green solution": "#98fb98",
-    "Blue solution": "#1e90ff",
-    "Pale pink solution": "#e6e6fa",
-    "Pale brown precipitate": "#bdb76b"
-  };
+    const colour_visuals = {
+      "Pale blue solution": "#00BFFF",
+      "Pale blue precipitate": "#00BFFF",
+      "Dark blue solution": "#00008b",
+      "Yellow solution": "#ffff00",
+      "White precipitate": "#ffffff",
+      "Brown solid": "#8b4513",
+      "Pale purple solution": "#da70d6",
+      "Dark green precipitate": "#006400",
+      "Purple solution": "#4b0082",
+      "Dark green solution": "#006400",
+      "Orange solution": "#ff8c00",
+      "Orange-brown precipitate": "#b8860b",
+      "Pale green solution": "#98fb98",
+      "Blue solution": "#1e90ff",
+      "Pale pink solution": "#e6e6fa",
+      "Pale brown precipitate": "#bdb76b"
+    };
 
   const ionEl = document.getElementById('ion');
   const dropzonesEl = document.getElementById('dropzones');
