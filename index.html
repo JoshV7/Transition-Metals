@@ -30,7 +30,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      overflow-y: auto;
     }
 
     #top-controls {
@@ -134,16 +133,16 @@
 
     #dropzones {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(110px, 110px));
       gap: 0.8rem;
       width: 100%;
       max-width: 700px;
-      /* allow vertical scroll if needed */
       overflow-y: auto;
     }
 
     .dropzone {
-      aspect-ratio: 1 / 1; /* square */
+      aspect-ratio: 1 / 1; /* perfect square */
+      width: 100%;         /* fill grid cell */
       border-radius: 8px;
       padding: 0.7rem 0.5rem;
       text-align: center;
@@ -161,8 +160,8 @@
       word-wrap: break-word;
       overflow-wrap: break-word;
       line-height: 1.1;
-      max-width: 100%;
       box-sizing: border-box;
+      max-width: 100%;
     }
 
     .dropzone.drag-over,
@@ -178,7 +177,6 @@
       padding: 0.5rem 1rem 1rem;
       color: #888;
       font-weight: 600;
-      user-select: none;
     }
 
     @media (max-width: 480px) {
@@ -200,20 +198,14 @@
       }
 
       #dropzones {
-        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(80px, 80px));
         max-width: 100%;
         gap: 0.6rem;
-        overflow-y: visible;
       }
 
       .dropzone {
-        font-size: 0.8rem;
-        height: auto;
-        min-height: 80px;
-        aspect-ratio: auto; /* allow flexible height on mobile */
-        white-space: normal;
-        word-wrap: break-word;
-        max-width: 100%;
+        min-width: 80px;
+        height: auto; /* height will be controlled by aspect ratio */
       }
     }
   </style>
