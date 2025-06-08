@@ -30,6 +30,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow-y: auto;
     }
 
     #top-controls {
@@ -137,28 +138,32 @@
       gap: 0.8rem;
       width: 100%;
       max-width: 700px;
+      /* allow vertical scroll if needed */
+      overflow-y: auto;
     }
 
     .dropzone {
-  height: 100px; /* replace aspect-ratio with height */
-  border-radius: 8px;
-  padding: 0.7rem 0.5rem;
-  text-align: center;
-  font-weight: 600;
-  color: black;
-  border: 2px solid #666;
-  user-select: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.9rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  cursor: pointer;
-  background-color: #888;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  line-height: 1.1;
-}
+      aspect-ratio: 1 / 1; /* square */
+      border-radius: 8px;
+      padding: 0.7rem 0.5rem;
+      text-align: center;
+      font-weight: 600;
+      color: black;
+      border: 2px solid #666;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+      background-color: #888;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      line-height: 1.1;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
 
     .dropzone.drag-over,
     .dropzone.active {
@@ -173,6 +178,7 @@
       padding: 0.5rem 1rem 1rem;
       color: #888;
       font-weight: 600;
+      user-select: none;
     }
 
     @media (max-width: 480px) {
@@ -197,15 +203,17 @@
         grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
         max-width: 100%;
         gap: 0.6rem;
+        overflow-y: visible;
       }
 
       .dropzone {
+        font-size: 0.8rem;
+        height: auto;
+        min-height: 80px;
+        aspect-ratio: auto; /* allow flexible height on mobile */
         white-space: normal;
         word-wrap: break-word;
-        flex: 1 1 20%;
-        min-width: 140px;
         max-width: 100%;
-        height: auto;
       }
     }
   </style>
