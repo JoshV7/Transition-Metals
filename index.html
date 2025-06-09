@@ -463,14 +463,14 @@
 </head>
 <body>
   <header>
-    <div class="header-title">Transition Metal Master</div>
-    <div class="header-subtitle">Master the colors, reactions, and properties of transition metal compounds</div>
+    <div class="header-title">Transition Metal Quiz</div>
+    <div class="header-subtitle">Master the colours and reactions of transition metal compounds – by Josh</div>
   </header>
 
   <main>
     <div class="game-modes">
-      <button class="mode-btn active" data-mode="species-to-color">Species → Color</button>
-      <button class="mode-btn" data-mode="color-to-species">Color → Species</button>
+      <button class="mode-btn active" data-mode="species-to-color">Species → Colour</button>
+      <button class="mode-btn" data-mode="color-to-species">Colour → Species</button>
       <button class="mode-btn" data-mode="reaction-products">Reaction Products</button>
       <button class="mode-btn" data-mode="mixed-practice">Mixed Practice</button>
     </div>
@@ -490,7 +490,7 @@
     </div>
 
     <div class="question-container">
-      <div id="question-prompt">What color is this species?</div>
+      <div id="question-prompt">What colour is this species?</div>
       <div id="ion" draggable="true" tabindex="0" aria-grabbed="false"></div>
     </div>
 
@@ -503,80 +503,87 @@
   </footer>
 
   <script>
-    // Comprehensive species and colors database covering OCR specification
-    const species_colours = {
-      // Copper compounds (OCR 5.3.1 h, j)
-      "[Cu(H₂O)₆]²⁺": "Pale blue solution",
-      "Cu(OH)₂": "Pale blue ppt",
-      "[Cu(NH₃)₄(H₂O)₂]²⁺": "Deep blue solution",
-      "CuCl₄²⁻": "Yellow solution",
-      "CuI": "White ppt",
-      "Cu": "Reddish-brown solid",
-      "Cu₂O": "Red solid",
-      
-      // Chromium compounds (OCR 5.3.1 h, j, k)
-      "[Cr(H₂O)₆]³⁺": "Purple solution",
-      "Cr(OH)₃": "Grey-green ppt",
-      "[Cr(NH₃)₆]³⁺": "Yellow solution",
-      "[Cr(OH)₆]³⁻": "Dark green solution",
-      "Cr₂O₇²⁻": "Orange solution",
-      "CrO₄²⁻": "Yellow solution",
-      
-      // Iron compounds (OCR 5.3.1 i, j, k)
-      "[Fe(H₂O)₆]³⁺": "Yellow solution",
-      "Fe(OH)₃": "Orange-brown ppt",
-      "[Fe(H₂O)₆]²⁺": "Pale green solution",
-      "Fe(OH)₂": "Dirty green ppt",
-      
-      // Cobalt compounds
-      "[Co(H₂O)₆]²⁺": "Pink solution",
-      "Co(OH)₂": "Blue-green ppt",
-      "CoCl₄²⁻": "Blue solution",
-      
-      // Manganese compounds (OCR 5.3.1 j, k)
-      "[Mn(H₂O)₆]²⁺": "Very pale pink solution",
-      "Mn(OH)₂": "Cream ppt",
-      "MnO₄⁻": "Purple solution",
-      "MnO₄²⁻": "Green solution"
-    };
+  // ✅ OCR A Transition Metals: Species & Colours (spec section 5.3.1 h–k)
+const species_colours = {
+  "[Cu(H₂O)₆]²⁺": "Light blue solution",
+  "Cu(OH)₂": "Light blue precipitate",
+  "[Cu(NH₃)₄(H₂O)₂]²⁺": "Dark blue solution",
+  "CuCl₄²⁻": "Yellow solution",
+  "CuI": "White precipitate",
+  "Cu": "Brown",
+  "[Cr(H₂O)₆]³⁺": "Pale purple solution",
+  "Cr(OH)₃": "Grey-green precipitate",
+  "[Cr(NH₃)₆]³⁺": "Purple solution",
+  "[Cr(OH)₆]³⁻": "Dark green solution",
+  "Cr₂O₇²⁻": "Orange solution",
+  "CrO₄²⁻": "Yellow solution",
+  "[Fe(H₂O)₆]³⁺": "Yellow solution",
+  "Fe(OH)₃": "Orange-brown precipitate",
+  "[Fe(H₂O)₆]²⁺": "Pale green solution",
+  "Fe(OH)₂": "Dark green precipitate",
+  "CoCl₄²⁻": "Blue solution",
+  "[Mn(H₂O)₆]²⁺": "Pale pink solution",
+  "Mn(OH)₂": "Pale brown precipitate",
+  "MnO₄⁻": "Pale pink solution",
+  "Mn²⁺": "Colourless",
+  "I₂": "Brown",
+  "Cr³⁺": "Green",
+  "Cr²⁺": "Pale blue"
+};
 
-    // Reaction products for advanced questions
-    const reaction_products = {
-      "Cu²⁺ + OH⁻": "Cu(OH)₂ (pale blue ppt)",
-      "Cu²⁺ + excess NH₃": "[Cu(NH₃)₄(H₂O)₂]²⁺ (deep blue)",
-      "Fe³⁺ + OH⁻": "Fe(OH)₃ (orange-brown ppt)",
-      "Fe²⁺ + OH⁻": "Fe(OH)₂ (dirty green ppt)",
-      "Cr³⁺ + OH⁻": "Cr(OH)₃ (grey-green ppt)",
-      "Cr³⁺ + excess OH⁻": "[Cr(OH)₆]³⁻ (dark green)",
-      "Mn²⁺ + OH⁻": "Mn(OH)₂ (cream ppt)",
-      "Cu²⁺ + I⁻": "CuI + I₂ (white ppt + brown)",
-      "Fe³⁺ + I⁻": "Fe²⁺ + I₂ (pale green + brown)",
-      "Cr₂O₇²⁻ + Zn/H⁺": "Cr³⁺ (orange to green)"
-    };
+// ✅ OCR Reactions & Products: Ligand Substitution / Precipitation / Redox
+const reaction_products = {
+  // Precipitation
+  "[Cu(H₂O)₆]²⁺ + 2OH⁻": "Cu(OH)₂ + 6H₂O",
+  "[Fe(H₂O)₆]²⁺ + 2OH⁻": "Fe(OH)₂ + 6H₂O",
+  "[Fe(H₂O)₆]³⁺ + 3OH⁻": "Fe(OH)₃ + 6H₂O",
+  "[Cr(H₂O)₆]³⁺ + 3OH⁻": "Cr(OH)₃ + 6H₂O",
+  "[Mn(H₂O)₆]²⁺ + 2OH⁻": "Mn(OH)₂ + 6H₂O",
+  "[Co(H₂O)₆]²⁺ + 2OH⁻": "Co(OH)₂ + 6H₂O",
 
-    const colour_visuals = {
-      "Pale blue solution": "#87CEEB",
-      "Pale blue ppt": "#87CEEB",
-      "Deep blue solution": "#00008B",
-      "Yellow solution": "#FFD700",
-      "White ppt": "#FFFFFF",
-      "Reddish-brown solid": "#A0522D",
-      "Red solid": "#DC143C",
-      "Purple solution": "#8A2BE2",
-      "Grey-green ppt": "#708090",
-      "Dark green solution": "#006400",
-      "Orange solution": "#FF8C00",
-      "Orange-brown ppt": "#CD853F",
-      "Pale green solution": "#98FB98",
-      "Dirty green ppt": "#556B2F",
-      "Pink solution": "#FFB6C1",
-      "Blue-green ppt": "#20B2AA",
-      "Blue solution": "#1E90FF",
-      "Very pale pink solution": "#F0E6FF",
-      "Cream ppt": "#FFFDD0",
-      "Green solution": "#32CD32",
-      "Brown": "#8B4513"
-    };
+  // Ligand substitution
+  "[Cu(H₂O)₆]²⁺ + 4NH₃": "[Cu(NH₃)₄(H₂O)₂]²⁺ + 4H₂O",
+  "[Cu(H₂O)₆]²⁺ + 4Cl⁻": "CuCl₄²⁻ + 6H₂O",
+  "[Cr(H₂O)₆]³⁺ + 6NH₃": "[Cr(NH₃)₆]³⁺ + 6H₂O",
+  "Cr(OH)₃ + 3OH⁻": "[Cr(OH)₆]³⁻",
+  "[Co(H₂O)₆]²⁺ + 4Cl⁻": "CoCl₄²⁻ + 6H₂O",
+
+  // Redox
+  "2Cu²⁺ + 4I⁻": "2CuI + I₂",
+  "2Fe³⁺ + 2I⁻": "2Fe²⁺ + I₂",
+  "Cr₂O₇²⁻ + 14H⁺ + 3Zn": "2Cr³⁺ + 3Zn²⁺ + 7H₂O",
+  "MnO₄⁻ + 8H⁺ + 5Fe²⁺": "Mn²⁺ + 5Fe³⁺ + 4H₂O",
+  "Zn + 2Cr³⁺": "Zn²⁺ + 2Cr²⁺",
+  "2Cr³⁺ + 3H₂O₂ + 10OH⁻": "2CrO₄²⁻ + 8H₂O"
+};
+
+// ✅ OCR-Safe Colour Codes for Display
+const colour_visuals = {
+  "Light blue solution": "#ADD8E6",
+  "Light blue precipitate": "#ADD8E6",
+  "Dark blue solution": "#00008B",
+  "Yellow solution": "#FFD700",
+  "White precipitate": "#FFFFFF",
+  "Brown solid": "#A0522D",
+  "Pale purple solution": "#B39EB5",
+  "Grey-green precipitate": "#708090",
+  "Purple solution": "#8A2BE2",
+  "Dark green solution": "#006400",
+  "Orange solution": "#FF8C00",
+  "Orange-brown precipitate": "#CD853F",
+  "Pale green solution": "#98FB98",
+  "Dark green precipitate": "#556B2F",
+  "Blue solution": "#1E90FF",
+  "Pale pink solution": "#FADADD",
+  "Pale brown precipitate": "#8B4513",
+  "Colourless": "#F8F8F8",
+  "Brown": "#8B4513",
+  "Green": "#228B22",
+  "Pale blue": "#AFEEEE"
+};
+
+
+
 
     // Game state variables
     let currentMode = 'species-to-color';
@@ -638,18 +645,18 @@
       switch(currentMode) {
         case 'species-to-color':
           currentDataset = species_colours;
-          questionPromptEl.textContent = 'What color is this species?';
+          questionPromptEl.textContent = 'What colour is this species?';
           break;
         case 'color-to-species':
           currentDataset = {};
           Object.entries(species_colours).forEach(([species, color]) => {
             currentDataset[color] = species;
           });
-          questionPromptEl.textContent = 'Which species has this color?';
+          questionPromptEl.textContent = 'Which species has this colour?';
           break;
         case 'reaction-products':
           currentDataset = reaction_products;
-          questionPromptEl.textContent = 'What is the product and color?';
+          questionPromptEl.textContent = 'What is the product?';
           break;
         case 'mixed-practice':
           // Combine all question types
@@ -659,7 +666,7 @@
             colorToSpecies[color] = species;
           });
           currentDataset = {...currentDataset, ...colorToSpecies};
-          questionPromptEl.textContent = 'Answer the question:';
+          questionPromptEl.textContent = 'Match:';
           break;
       }
       
